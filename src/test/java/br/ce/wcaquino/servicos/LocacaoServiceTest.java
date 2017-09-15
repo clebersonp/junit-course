@@ -26,7 +26,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.ExpectedException;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import br.ce.wcaquino.daos.LocacaoDAO;
 import br.ce.wcaquino.entidades.Filme;
@@ -38,20 +41,29 @@ import br.ce.wcaquino.utils.DataUtils;
 
 public class LocacaoServiceTest {
 
+	@InjectMocks // falando em qual classe que sera testada que devera injetar os mock
 	private LocacaoService service;
+	
+	@Mock // injetando os mocks
 	private LocacaoDAO dao;
+	@Mock
 	private SPCService spcService;
+	@Mock
 	private EmailService emailService; 
 
 	@Before
 	public void init() {
-		this.service = new LocacaoService();
-		dao = Mockito.mock(LocacaoDAO.class);
-		this.service.setLocacaoDao(dao);
-		spcService = Mockito.mock(SPCService.class);
-		this.service.setSPCService(spcService);
-		emailService = Mockito.mock(EmailService.class);
-		this.service.setEmailService(emailService);
+
+		// estou dizendo que é para iniciar os mock que tiverem com anotaçao nesta classe de teste
+		MockitoAnnotations.initMocks(this);
+//		não preciso mais de passar as instancias mockadas para os setters. Ver classe LocacaoService
+//		this.service = new LocacaoService();
+//		dao = Mockito.mock(LocacaoDAO.class);
+//		this.service.setLocacaoDao(dao);
+//		spcService = Mockito.mock(SPCService.class);
+//		this.service.setSPCService(spcService);
+//		emailService = Mockito.mock(EmailService.class);
+//		this.service.setEmailService(emailService);
 	}
 	
 	@Rule

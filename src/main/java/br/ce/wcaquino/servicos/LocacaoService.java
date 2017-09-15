@@ -70,15 +70,16 @@ public class LocacaoService {
 		}
 	}
 	
-	public void setLocacaoDao(LocacaoDAO dao) {
-		this.dao = dao;
-	}
-	
-	public void setSPCService(SPCService spcService) {
-		this.spcService = spcService;
-	}
-	
-	public void setEmailService(EmailService emailService) {
-		this.emailService = emailService;
-	}
+	// removi esses setters uma vez que não preciso mais injetar instancias mockadas. Agora o mock se vira. ver as anotaçoes na classe LocacaoServiceTest
+//	public void setLocacaoDao(LocacaoDAO dao) {
+//		this.dao = dao;
+//	}
+//	
+//	public void setSPCService(SPCService spcService) {
+//		this.spcService = spcService;
+//	}
+//	
+//	public void setEmailService(EmailService emailService) {
+//		this.emailService = emailService;
+//	}
 }

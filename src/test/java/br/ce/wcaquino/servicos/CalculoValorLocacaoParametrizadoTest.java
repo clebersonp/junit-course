@@ -15,7 +15,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.mockito.Mockito;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import br.ce.wcaquino.daos.LocacaoDAO;
 import br.ce.wcaquino.entidades.Filme;
@@ -27,7 +29,13 @@ import br.ce.wcaquino.exceptions.LocadoraException;
 @RunWith(Parameterized.class)
 public class CalculoValorLocacaoParametrizadoTest {
 
+	@InjectMocks
 	private LocacaoService service;
+	
+	@Mock
+	private LocacaoDAO dao;
+	@Mock
+	private SPCService spcService;
 	
 	@Parameter(value = 0)
 	public Usuario usuario;
@@ -53,11 +61,14 @@ public class CalculoValorLocacaoParametrizadoTest {
 	
 	@Before
 	public void init() {
-		this.service = new LocacaoService();
-		LocacaoDAO dao = Mockito.mock(LocacaoDAO.class);
-		this.service.setLocacaoDao(dao);
-		SPCService spcService = Mockito.mock(SPCService.class);
-		this.service.setSPCService(spcService);
+
+		MockitoAnnotations.initMocks(this);
+// 		ver na classe LocacaoServiceTest o motivo de comentar esse setters
+//		this.service = new LocacaoService();
+//		LocacaoDAO dao = Mockito.mock(LocacaoDAO.class);
+//		this.service.setLocacaoDao(dao);
+//		SPCService spcService = Mockito.mock(SPCService.class);
+//		this.service.setSPCService(spcService);
 	}
 	
 	@Parameters(name = "{3}")
