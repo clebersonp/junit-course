@@ -237,7 +237,10 @@ public class LocacaoServiceTest {
 		List<Filme> filmes = Arrays.asList(criaUmFilme().comEstoque(2).agora());
 
 		// alterar o comportamento default de um metodo para o mock
-		when(spcService.possuiNegativacao(usuario)).thenReturn(Boolean.TRUE);
+//		when(spcService.possuiNegativacao(usuario)).thenReturn(Boolean.TRUE);
+		
+		// usando matcher do mockito
+		when(spcService.possuiNegativacao(Mockito.any(Usuario.class))).thenReturn(Boolean.TRUE);
 		
 		//acao
 		try {
@@ -257,12 +260,14 @@ public class LocacaoServiceTest {
 	public void deveEncaminharEmailParaLocacoesComAtraso() {
 		//cenario
 		Usuario usuario = criaUmUsuario().agora();
+		Usuario usuario2 = criaUmUsuario().comNome("Usuario 2").agora();
+		Usuario usuario3 = criaUmUsuario().comNome("Usuario 3").agora();
+		
 		List<Locacao> locacoes = 
-				Arrays.asList(
-						criaUmaLocacao()
-						.comUsuario(usuario)
-						.comRetorno(DataUtils.obterDataComDiferencaDias(-3))
-						.agora());
+				Arrays.asList(criaUmaLocacao().atrasado().comUsuario(usuario).agora(),
+						criaUmaLocacao().comUsuario(usuario2).agora(),
+						criaUmaLocacao().comRetorno(DataUtils.obterDataComDiferencaDias(-4)).comUsuario(usuario3).agora(),
+						criaUmaLocacao().comRetorno(DataUtils.obterDataComDiferencaDias(-12)).comUsuario(usuario3).agora());
 		
 		// como ler: quando eu chamar o metodo obterLocacoesPendentes entao retorna a lista de locacao
 		when(dao.obterLocacoesPendentes()).thenReturn(locacoes);
@@ -272,7 +277,16 @@ public class LocacaoServiceTest {
 		
 		//verificacao
 		// Como ler: verifica se o metodo chamado recebeu o usuario especifico
+		// Matcher generico de usuario. 
+		// Se o metodo tiver mais de um parametro e eu utilizar um Matcher do mockito, 
+		// eu terei que usar Matcher em todos os parametros, o mockito não deixa mesclar 
+		//  entre valor fixos e Matchers. Ver o teste da classe CalculadoraMockTest
+		
+		Mockito.verify(emailService, Mockito.times(3)).notificarAtraso(Mockito.any(Usuario.class)); 
 		Mockito.verify(emailService).notificarAtraso(usuario);
+		Mockito.verify(emailService, Mockito.atLeastOnce()).notificarAtraso(usuario3);
+		Mockito.verify(emailService, Mockito.never()).notificarAtraso(usuario2);
+		Mockito.verifyNoMoreInteractions(emailService);
 	}
 }
 
