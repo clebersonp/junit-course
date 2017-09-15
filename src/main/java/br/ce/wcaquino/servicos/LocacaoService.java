@@ -1,6 +1,7 @@
 package br.ce.wcaquino.servicos;
 
 import static br.ce.wcaquino.utils.DataUtils.adicionarDias;
+import static br.ce.wcaquino.utils.DataUtils.obterDataComDiferencaDias;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -36,10 +37,18 @@ public class LocacaoService {
 			throw new FilmeSemEstoqueException("Filme sem estoque!");
 		}
 		
-		if (this.spcService.possuiNegativacao(usuario)) {
-			throw new LocadoraException("Usuário negativado pelo SPC");
+		boolean ehNegativado = false;
+		
+		try {
+			ehNegativado = this.spcService.possuiNegativacao(usuario);
+		} catch (Exception e) {
+			throw new LocadoraException("Erro no spc, tente novamente!");
 		}
 		
+		if (ehNegativado) {
+			throw new LocadoraException("Usuário negativado pelo SPC");
+		}
+
 		Locacao locacao = new Locacao();
 		locacao.setFilmes(filmes);
 		locacao.setUsuario(usuario);
@@ -68,6 +77,17 @@ public class LocacaoService {
 				emailService.notificarAtraso(locacao.getUsuario());
 			}
 		}
+	}
+	
+	public void prorrogarLocacao(Locacao locacao, int dias) {
+		Locacao novaLocacao = new Locacao();
+		novaLocacao.setUsuario(locacao.getUsuario());
+		novaLocacao.setFilmes(locacao.getFilmes());
+		novaLocacao.setDataLocacao(locacao.getDataLocacao());
+		novaLocacao.setDataRetorno(obterDataComDiferencaDias(dias));
+		novaLocacao.setValor(locacao.getValor() * dias);
+		
+		dao.salvar(novaLocacao);
 	}
 	
 	// removi esses setters uma vez que não preciso mais injetar instancias mockadas. Agora o mock se vira. ver as anotaçoes na classe LocacaoServiceTest

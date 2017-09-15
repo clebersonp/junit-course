@@ -11,6 +11,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -243,7 +245,7 @@ public class LocacaoServiceTest {
 	}
 	
 	@Test
-	public void naoDeveAlugarFilmeParaUsuarioNegativadoPeloSPC() throws FilmeSemEstoqueException {
+	public void naoDeveAlugarFilmeParaUsuarioNegativadoPeloSPC() throws Exception {
 		//cenario
 		Usuario usuario = criaUmUsuario().agora();
 		List<Filme> filmes = Arrays.asList(criaUmFilme().comEstoque(2).agora());
@@ -299,6 +301,46 @@ public class LocacaoServiceTest {
 		Mockito.verify(emailService, Mockito.atLeastOnce()).notificarAtraso(usuario3);
 		Mockito.verify(emailService, Mockito.never()).notificarAtraso(usuario2);
 		Mockito.verifyNoMoreInteractions(emailService);
+	}
+	
+	@Test
+	public void deveTratarErroNoSPC() throws Exception {
+		// cenario
+		Usuario usuario = criaUmUsuario().agora();
+		List<Filme> filmes = Arrays.asList(criaUmFilme().agora());
+		
+		when(spcService.possuiNegativacao(usuario)).thenThrow(new Exception("Erro catastrófico!"));
+		
+		//validacao
+		exception.expect(LocadoraException.class);
+		exception.expectMessage("Erro no spc, tente novamente!");
+		
+		//acao
+		service.alugarFilme(usuario, filmes);
+	}
+	
+	// testar metodo void com ArgumentCaptor 
+	@Test
+	public void deveProrrogarLocacao() {
+		// cenario
+		Locacao locacao = criaUmaLocacao().agora();
+		int qtdDias = 3;
+		
+		// acao
+		service.prorrogarLocacao(locacao, qtdDias);
+		
+		// verificacao
+		ArgumentCaptor<Locacao> argCapt = ArgumentCaptor.forClass(Locacao.class);
+		verify(dao).salvar(argCapt.capture());
+		Locacao locacaoRetornada = argCapt.getValue();
+		
+		// se eu usar mais de um assertThat comum e o primeiro falhar, os demais não serão validados,
+		// para isso usamos errorCollector, pois ele executa todos e mostra os erros
+		
+		error.checkThat(locacaoRetornada.getValor(), is(12.0));
+		error.checkThat(locacaoRetornada.getDataLocacao(), is(ehHoje()));
+		error.checkThat(locacaoRetornada.getDataRetorno(), is(ehHojeComDiferencaDias(3)));
+	
 	}
 }
 

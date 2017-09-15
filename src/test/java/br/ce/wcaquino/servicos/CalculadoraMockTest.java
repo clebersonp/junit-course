@@ -1,5 +1,8 @@
 package br.ce.wcaquino.servicos;
 
+import static org.hamcrest.CoreMatchers.is;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -11,7 +14,7 @@ public class CalculadoraMockTest {
 		
 		Mockito.when(calc.somar(Mockito.eq(1), Mockito.anyInt())).thenReturn(5);
 		
-		System.out.println(calc.somar(1, 10008));
+		Assert.assertThat(calc.somar(1, 10008), is(5));
 		
 	}
 	
