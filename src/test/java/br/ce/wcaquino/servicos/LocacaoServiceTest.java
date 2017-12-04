@@ -26,6 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -40,8 +41,14 @@ import br.ce.wcaquino.entidades.Locacao;
 import br.ce.wcaquino.entidades.Usuario;
 import br.ce.wcaquino.exceptions.FilmeSemEstoqueException;
 import br.ce.wcaquino.exceptions.LocadoraException;
+import br.ce.wcaquino.runners.ParaleloRunner;
 import br.ce.wcaquino.utils.DataUtils;
 
+// @RunWith(JUnit4.class) runner default do Junit4
+
+//criando classe para rodar os metodos de teste em paralelo, mas as classes serao executadas em serie
+// Essa abordagem não da para ser feita quando uma classe de teste já estiver um RunWith() definido
+@RunWith(ParaleloRunner.class)
 public class LocacaoServiceTest {
 
 	@InjectMocks // falando em qual classe que sera testada que devera injetar os mock

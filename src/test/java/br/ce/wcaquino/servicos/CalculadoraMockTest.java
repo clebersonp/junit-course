@@ -3,12 +3,16 @@ package br.ce.wcaquino.servicos;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
+import br.ce.wcaquino.runners.ParaleloRunner;
+
+@RunWith(ParaleloRunner.class)
 public class CalculadoraMockTest {
 
 	@Mock
