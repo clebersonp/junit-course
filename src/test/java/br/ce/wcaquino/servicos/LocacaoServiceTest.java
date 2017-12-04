@@ -16,22 +16,24 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import br.ce.wcaquino.daos.LocacaoDAO;
 import br.ce.wcaquino.entidades.Filme;
@@ -41,6 +43,11 @@ import br.ce.wcaquino.exceptions.FilmeSemEstoqueException;
 import br.ce.wcaquino.exceptions.LocadoraException;
 import br.ce.wcaquino.utils.DataUtils;
 
+// estou dizendo que devera ser gerenciada pelo power mock
+@RunWith(PowerMockRunner.class)
+
+// estou informando qual classe deve ser preparada para o power mock atuar
+@PrepareForTest({LocacaoService.class, DataUtils.class})
 public class LocacaoServiceTest {
 
 	@InjectMocks // falando em qual classe que sera testada que devera injetar os mock
@@ -70,17 +77,21 @@ public class LocacaoServiceTest {
 	
 	@Rule
 	public ErrorCollector error = new ErrorCollector();
-
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-
 	@Test
 	public void deveAlugarUmFilme() throws Exception {
-		Assume.assumeFalse(DataUtils.verificarDiaSemana(new Date(), Calendar.SATURDAY));
-		// cenario
+//		Assume.assumeFalse(DataUtils.verificarDiaSemana(new Date(), Calendar.SATURDAY));    
+	    // alterar o comportamento do new Date() atraves do power mock;
+		
+	    // cenario
+
+	    // mockando uma data sendo um dia da semana, menos sabado
+	    PowerMockito.whenNew(Date.class).withNoArguments().thenReturn(DataUtils.obterData(28, 4, 2017));
 		Usuario usuario = criaUmUsuario().agora();
 		List<Filme> filmes = Arrays.asList(criaUmFilme().agora());
+		
 
 		// acao
 		Locacao locacao;
@@ -89,9 +100,20 @@ public class LocacaoServiceTest {
 		// verificacao
 		error.checkThat(locacao.getValor(), is(equalTo(5.0)));
 //		error.checkThat(isMesmaData(locacao.getDataLocacao(), new Date()), is(true));
-		error.checkThat(locacao.getDataLocacao(), ehHoje());
 //		error.checkThat(isMesmaData(locacao.getDataRetorno(), obterDataComDiferencaDias(1)), is(true));
+		
+		// por causa do matcherproprio, que chama metodos do DataUtils que tem construtores default,
+		// preciso tambem preparar a classe datautils para funcionar corretamente com o power mock
+		// Existem duas formar de solucionar o problema, Primeira: criando assertivas com as datas fixa para 28/04/2017
+		// e 29/04/2017, a Segunda: é preparando a classe DataUtils com o powermock
+		error.checkThat(locacao.getDataLocacao(), ehHoje());
 		error.checkThat(locacao.getDataRetorno(), ehHojeComDiferencaDias(1));
+		
+		// para verificar se um construtor do Date() foi chamado usando powermock
+		// cuidado com essa abordagem, utilizar somente se precisar, pois qualquer alteracao no codigo do servico,
+		// vai quebrar os testes
+		// usando PowerMockito com junit e Mockito
+		PowerMockito.verifyNew(Date.class, Mockito.times(4)).withNoArguments();
 	}
 
 	@Test(expected = FilmeSemEstoqueException.class)
@@ -227,11 +249,16 @@ public class LocacaoServiceTest {
 //	}
 	
 	@Test
-	public void deveDevolverFilmesNaSegundaFeiraAoAlugarNoSabado() throws LocadoraException, FilmeSemEstoqueException {
-		Assume.assumeTrue(DataUtils.verificarDiaSemana(new Date(), Calendar.SATURDAY));
+	public void deveDevolverFilmesNaSegundaFeiraAoAlugarNoSabado() throws Exception {
+//		Assume.assumeTrue(DataUtils.verificarDiaSemana(new Date(), Calendar.SATURDAY));
+	    // alterar o comportamento do new Date() atraves do power mock;
+	    
 		//cenario
 		Usuario usuario = criaUmUsuario().agora();
 		List<Filme> filmes = Arrays.asList(criaUmFilme().comEstoque(1).agora());
+
+		// mockando uma data sendo sabado
+		PowerMockito.whenNew(Date.class).withNoArguments().thenReturn(DataUtils.obterData(29, 4, 2017));
 		
 		//acao
 		Locacao locacao = service.alugarFilme(usuario, filmes);
@@ -242,6 +269,9 @@ public class LocacaoServiceTest {
 //		assertThat(locacao.getDataRetorno(), new DiaSemanaMatcher(Calendar.MONDAY));
 //		assertThat(locacao.getDataRetorno(), caiEm(Calendar.MONDAY));
 		assertThat(locacao.getDataRetorno(), ehSegunda());
+		
+		// o construtor default Date() sera executado 2 vezes dentro do servico de alugar um filme;
+		PowerMockito.verifyNew(Date.class, Mockito.times(2)).withNoArguments();
 	}
 	
 	@Test
