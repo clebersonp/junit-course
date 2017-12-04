@@ -53,11 +53,11 @@ public class LocacaoService {
 		locacao.setFilmes(filmes);
 		locacao.setUsuario(usuario);
 //		locacao.setDataLocacao(new Date()); trocado para testar o powermock para metodos staticos
-		locacao.setDataLocacao(Calendar.getInstance().getTime());
+		locacao.setDataLocacao(obterDataAtual());
 		locacao.setValor(calcularValorTotal(filmes));
 		
 		//Entrega no dia seguinte
-		Date dataEntrega = Calendar.getInstance().getTime();
+		Date dataEntrega = obterDataAtual();
 		dataEntrega = adicionarDias(dataEntrega, 1);
 		if (DataUtils.verificarDiaSemana(dataEntrega, Calendar.SUNDAY)) {
 			dataEntrega = adicionarDias(dataEntrega, 1);
@@ -70,6 +70,10 @@ public class LocacaoService {
 		
 		return locacao;
 	}
+
+    protected Date obterDataAtual() {
+        return new Date();
+    }
 	
 	// mockando metodos privados com powermockito
 	private double calcularValorTotal(List<Filme> filmes) {
@@ -94,7 +98,7 @@ public class LocacaoService {
     public void notificarAtrasos() {
 		List<Locacao> locacoes = dao.obterLocacoesPendentes();
 		for (Locacao locacao : locacoes) {
-			if (locacao.getDataRetorno().before(new Date())) {
+			if (locacao.getDataRetorno().before(obterDataAtual())) {
 				emailService.notificarAtraso(locacao.getUsuario());
 			}
 		}
@@ -104,7 +108,7 @@ public class LocacaoService {
 		Locacao novaLocacao = new Locacao();
 		novaLocacao.setUsuario(locacao.getUsuario());
 		novaLocacao.setFilmes(locacao.getFilmes());
-		novaLocacao.setDataLocacao(new Date());
+		novaLocacao.setDataLocacao(obterDataAtual());
 		novaLocacao.setDataRetorno(obterDataComDiferencaDias(dias));
 		novaLocacao.setValor(locacao.getValor() * dias);
 		
