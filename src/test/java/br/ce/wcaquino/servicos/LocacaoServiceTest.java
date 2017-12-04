@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -88,7 +89,18 @@ public class LocacaoServiceTest {
 	    // cenario
 
 	    // mockando uma data sendo um dia da semana, menos sabado
-	    PowerMockito.whenNew(Date.class).withNoArguments().thenReturn(DataUtils.obterData(28, 4, 2017));
+//	    PowerMockito.whenNew(Date.class).withNoArguments().thenReturn(DataUtils.obterData(28, 4, 2017));
+	    
+	    // E se eu precisar criar um comportamento para metodos staticos?
+	    // vou trocar o new Date() do servico de alugar filme para Calendar.getInstance().getTime();
+	    // O PowerMock tbm consegue alterar comportamentos de metodos staticos
+	    Calendar calendar = Calendar.getInstance();
+	    calendar.set(Calendar.DAY_OF_MONTH, 28);
+	    calendar.set(Calendar.MONTH, Calendar.APRIL);
+	    calendar.set(Calendar.YEAR, 2017);
+	    PowerMockito.mockStatic(Calendar.class);
+	    PowerMockito.when(Calendar.getInstance()).thenReturn(calendar);
+	    
 		Usuario usuario = criaUmUsuario().agora();
 		List<Filme> filmes = Arrays.asList(criaUmFilme().agora());
 		
@@ -113,7 +125,12 @@ public class LocacaoServiceTest {
 		// cuidado com essa abordagem, utilizar somente se precisar, pois qualquer alteracao no codigo do servico,
 		// vai quebrar os testes
 		// usando PowerMockito com junit e Mockito
-		PowerMockito.verifyNew(Date.class, Mockito.times(4)).withNoArguments();
+		//PowerMockito.verifyNew(Date.class, Mockito.times(4)).withNoArguments();
+		
+		
+		// A validacao para powermock com chamadas staticas é um pouco diferente
+		PowerMockito.verifyStatic(Mockito.times(10)); // 10 vezes, pois utiliza o LocadoraService e no DataUtils
+		Calendar.getInstance();
 	}
 
 	@Test(expected = FilmeSemEstoqueException.class)
@@ -258,7 +275,15 @@ public class LocacaoServiceTest {
 		List<Filme> filmes = Arrays.asList(criaUmFilme().comEstoque(1).agora());
 
 		// mockando uma data sendo sabado
-		PowerMockito.whenNew(Date.class).withNoArguments().thenReturn(DataUtils.obterData(29, 4, 2017));
+//		PowerMockito.whenNew(Date.class).withNoArguments().thenReturn(DataUtils.obterData(29, 4, 2017));
+		
+		// testando o powermock com metodos staticos
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.DAY_OF_MONTH, 29);
+		calendar.set(Calendar.MONTH, Calendar.APRIL);
+		calendar.set(Calendar.YEAR, 2017);
+		PowerMockito.mockStatic(Calendar.class);
+		PowerMockito.when(Calendar.getInstance()).thenReturn(calendar);
 		
 		//acao
 		Locacao locacao = service.alugarFilme(usuario, filmes);
@@ -271,7 +296,11 @@ public class LocacaoServiceTest {
 		assertThat(locacao.getDataRetorno(), ehSegunda());
 		
 		// o construtor default Date() sera executado 2 vezes dentro do servico de alugar um filme;
-		PowerMockito.verifyNew(Date.class, Mockito.times(2)).withNoArguments();
+//		PowerMockito.verifyNew(Date.class, Mockito.times(2)).withNoArguments();
+		
+		// verificando a chamado de metodo statico com powermockito
+		PowerMockito.verifyStatic(Mockito.times(6)); // 6 vezes pois chama o Calendar.getInstance() no servico de alugar fime e no DataUtils
+		Calendar.getInstance();
 	}
 	
 	@Test

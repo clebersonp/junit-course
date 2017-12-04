@@ -52,11 +52,12 @@ public class LocacaoService {
 		Locacao locacao = new Locacao();
 		locacao.setFilmes(filmes);
 		locacao.setUsuario(usuario);
-		locacao.setDataLocacao(new Date());
+//		locacao.setDataLocacao(new Date()); trocado para testar o powermock para metodos staticos
+		locacao.setDataLocacao(Calendar.getInstance().getTime());
 		locacao.valorTotal(filmes);
 		
 		//Entrega no dia seguinte
-		Date dataEntrega = new Date();
+		Date dataEntrega = Calendar.getInstance().getTime();
 		dataEntrega = adicionarDias(dataEntrega, 1);
 		if (DataUtils.verificarDiaSemana(dataEntrega, Calendar.SUNDAY)) {
 			dataEntrega = adicionarDias(dataEntrega, 1);
