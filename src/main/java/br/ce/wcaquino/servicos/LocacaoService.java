@@ -54,7 +54,7 @@ public class LocacaoService {
 		locacao.setUsuario(usuario);
 //		locacao.setDataLocacao(new Date()); trocado para testar o powermock para metodos staticos
 		locacao.setDataLocacao(Calendar.getInstance().getTime());
-		locacao.valorTotal(filmes);
+		locacao.setValor(calcularValorTotal(filmes));
 		
 		//Entrega no dia seguinte
 		Date dataEntrega = Calendar.getInstance().getTime();
@@ -71,7 +71,27 @@ public class LocacaoService {
 		return locacao;
 	}
 	
-	public void notificarAtrasos() {
+	// mockando metodos privados com powermockito
+	private double calcularValorTotal(List<Filme> filmes) {
+//	    System.out.println("Calculando valor total...."); teste para saber se o spy esta chamando ou nao
+        double valor = 0.0;
+	    if (filmes != null && !filmes.isEmpty()) {
+            for (int i = 0; i < filmes.size(); i++) {
+                double valorDoFilme = 0d;
+                switch(i) {
+                    case 2: valorDoFilme = filmes.get(i).getPrecoLocacao() * 0.75; break;
+                    case 3: valorDoFilme = filmes.get(i).getPrecoLocacao() * 0.50; break;
+                    case 4: valorDoFilme = filmes.get(i).getPrecoLocacao() * 0.25; break;
+                    case 5: valorDoFilme = 0d; break;
+                    default : valorDoFilme = filmes.get(i).getPrecoLocacao(); break;
+                }
+                valor += valorDoFilme;
+            }
+        }
+	    return valor;
+    }
+
+    public void notificarAtrasos() {
 		List<Locacao> locacoes = dao.obterLocacoesPendentes();
 		for (Locacao locacao : locacoes) {
 			if (locacao.getDataRetorno().before(new Date())) {

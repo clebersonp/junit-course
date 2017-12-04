@@ -35,6 +35,8 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import br.ce.wcaquino.builders.FilmeBuilder;
+import br.ce.wcaquino.builders.UsuarioBuilder;
 import br.ce.wcaquino.daos.LocacaoDAO;
 import br.ce.wcaquino.entidades.Filme;
 import br.ce.wcaquino.entidades.Locacao;
@@ -53,6 +55,9 @@ public class LocacaoServiceTest {
 
 	@InjectMocks // falando em qual classe que sera testada que devera injetar os mock
 	private LocacaoService service;
+	
+	@InjectMocks
+	private LocacaoService servicePowerMockSpy;
 	
 	@Mock // injetando os mocks
 	private LocacaoDAO dao;
@@ -74,6 +79,9 @@ public class LocacaoServiceTest {
 //		this.service.setSPCService(spcService);
 //		emailService = Mockito.mock(EmailService.class);
 //		this.service.setEmailService(emailService);
+		
+		// iniciando servicePowerMockSpy com powermockito
+		servicePowerMockSpy = PowerMockito.spy(servicePowerMockSpy);
 	}
 	
 	@Rule
@@ -400,6 +408,26 @@ public class LocacaoServiceTest {
 		error.checkThat(locacaoRetornada.getDataLocacao(), is(ehHoje()));
 		error.checkThat(locacaoRetornada.getDataRetorno(), is(ehHojeComDiferencaDias(3)));
 	
+	}
+	
+	// mockando metodo privado com powermockito spy
+	@Test
+	public void deveCalcularValorTotalAluguel() throws Exception {
+	    // cenario
+	    Usuario usuario = UsuarioBuilder.criaUmUsuario().agora();
+	    List<Filme> filmes = Arrays.asList(FilmeBuilder.criaUmFilme().agora()); // cria um filme com o valor 5.0
+	    
+	    // mockando metodo privado
+	    PowerMockito.doReturn(1.0).when(servicePowerMockSpy, "calcularValorTotal", filmes);
+	    
+	    // acao
+	    Locacao locacao = servicePowerMockSpy.alugarFilme(usuario, filmes);
+	    
+	    // verificacao
+	    assertThat(locacao.getValor(), is(1.0));
+	    
+	    // verificar se o powermockito invocou um metodo privado passando parametros
+	    PowerMockito.verifyPrivate(servicePowerMockSpy, Mockito.times(1)).invoke("calcularValorTotal", filmes);
 	}
 }
 

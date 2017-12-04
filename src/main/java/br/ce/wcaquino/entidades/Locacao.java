@@ -41,19 +41,4 @@ public class Locacao {
 	public void setFilmes(List<Filme> filmes) {
 		this.filmes = filmes;
 	}
-	public void valorTotal(List<Filme> filmes) {
-		if (filmes != null && !filmes.isEmpty()) {
-			for (int i = 0; i < filmes.size(); i++) {
-				double valorDoFilme = 0d;
-				switch(i) {
-					case 2: valorDoFilme = filmes.get(i).getPrecoLocacao() * 0.75; break;
-					case 3: valorDoFilme = filmes.get(i).getPrecoLocacao() * 0.50; break;
-					case 4: valorDoFilme = filmes.get(i).getPrecoLocacao() * 0.25; break;
-					case 5: valorDoFilme = 0d; break;
-					default : valorDoFilme = filmes.get(i).getPrecoLocacao(); break;
-				}
-				this.valor += valorDoFilme;
-			}
-		}
-	}
 }
