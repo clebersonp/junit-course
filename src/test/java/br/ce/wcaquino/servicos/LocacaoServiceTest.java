@@ -34,6 +34,7 @@ import org.mockito.MockitoAnnotations;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.Whitebox;
 
 import br.ce.wcaquino.builders.FilmeBuilder;
 import br.ce.wcaquino.builders.UsuarioBuilder;
@@ -45,6 +46,7 @@ import br.ce.wcaquino.exceptions.FilmeSemEstoqueException;
 import br.ce.wcaquino.exceptions.LocadoraException;
 import br.ce.wcaquino.utils.DataUtils;
 
+// O uso do PowerMockito diminui a cobertura de teste, pois precisa preparar um monte de coisas antes de executar os metodos de test
 // Teste com PowerMockito é mais demorado, pois o framework deve preparar todo o ambiente antes da execucao
 // estou dizendo que devera ser gerenciada pelo power mock
 @RunWith(PowerMockRunner.class)
@@ -412,7 +414,7 @@ public class LocacaoServiceTest {
 	
 	// mockando metodo privado com powermockito spy
 	@Test
-	public void deveCalcularValorTotalAluguel() throws Exception {
+	public void deveCalcularValorTotalAluguel_AlterandoComportamento() throws Exception {
 	    // cenario
 	    Usuario usuario = UsuarioBuilder.criaUmUsuario().agora();
 	    List<Filme> filmes = Arrays.asList(FilmeBuilder.criaUmFilme().agora()); // cria um filme com o valor 5.0
@@ -428,6 +430,20 @@ public class LocacaoServiceTest {
 	    
 	    // verificar se o powermockito invocou um metodo privado passando parametros
 	    PowerMockito.verifyPrivate(servicePowerMockSpy, Mockito.times(1)).invoke("calcularValorTotal", filmes);
+	}
+	
+	// mockando metodo privado diretamento com WhiteBox do powermockito
+	@Test
+	public void deveCalcularValorAluguel() throws Exception {
+	    // cenario
+	    List<Filme> filmes = Arrays.asList(FilmeBuilder.criaUmFilme().agora());
+	    
+	    // mockando diretamento metodo privado
+	    // acao
+	    Double valorTotal = (Double) Whitebox.invokeMethod(servicePowerMockSpy, "calcularValorTotal", filmes);
+	    
+	    // verificacao
+	    assertThat(valorTotal, is(equalTo(5.0)));
 	}
 }
 
