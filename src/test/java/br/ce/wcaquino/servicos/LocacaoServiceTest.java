@@ -17,7 +17,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
@@ -44,6 +43,7 @@ import br.ce.wcaquino.exceptions.FilmeSemEstoqueException;
 import br.ce.wcaquino.exceptions.LocadoraException;
 import br.ce.wcaquino.utils.DataUtils;
 
+// Teste com PowerMockito é mais demorado, pois o framework deve preparar todo o ambiente antes da execucao
 // estou dizendo que devera ser gerenciada pelo power mock
 @RunWith(PowerMockRunner.class)
 
